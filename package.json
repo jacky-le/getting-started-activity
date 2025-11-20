@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "cloudflared": "^0.7.1"
+  },
+  "scripts": {
+    "client": "npm run dev --prefix client",
+    "server": "npm run dev --prefix server",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "tunnel": "cloudflared tunnel --url http://localhost:5173"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
