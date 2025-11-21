@@ -1,13 +1,383 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/rocket.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello, World</title>
+    <title>Discord Activity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div id="app"></div>
+
+    <!-- Game Structure (Initially hidden or appended via JS, but safer to have here) -->
+    <div id="game-container" style="display: none">
+      <div id="scanlines"></div>
+
+      <!-- GAME UI LAYER -->
+      <div id="ui-layer">
+        <!-- BOSS HP BAR -->
+        <div id="boss-hud" style="display: none">
+          <div id="boss-name">BOSS NAME</div>
+          <div id="boss-hp-bar-container">
+            <div id="boss-hp-bar"></div>
+          </div>
+        </div>
+
+        <!-- FIXED WAVE HUD -->
+        <div id="wave-hud">
+          <div class="wave-line">WAVE <span id="wave-num">1</span></div>
+          <div id="enemies-left-container">
+            HOSTILES: <span id="enemies-count">0</span>
+          </div>
+        </div>
+
+        <!-- LEADERBOARD -->
+        <div id="leaderboard">
+          <div class="lb-title">SQUAD STATUS</div>
+          <div id="lb-list"></div>
+        </div>
+
+        <div id="message-area"></div>
+
+        <!-- UPGRADE MODAL -->
+        <div id="upgrade-modal" style="display: none">
+          <h2>SYSTEM UPGRADE AVAILABLE</h2>
+          <div id="cards-container"></div>
+        </div>
+
+        <div id="stats-bar">
+          <div class="stat-group">
+            <div id="hp-bar-container">
+              <div id="hp-bar"></div>
+              <span id="hp-text">HULL: 100%</span>
+            </div>
+            <div id="xp-bar-container">
+              <div id="xp-bar"></div>
+              <span id="lvl-text">LVL 1</span>
+            </div>
+          </div>
+
+          <div id="ability-hud">
+            <div id="ability-icon">
+              <div id="ability-cooldown-overlay"></div>
+              <div id="ability-key">SPC</div>
+            </div>
+            <div id="ability-details">
+              <div id="ability-name">ABILITY</div>
+              <div id="ability-status">READY</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEATH SCREEN -->
+      <div id="death-screen" style="display: none">
+        <h1 style="color: red; font-size: 60px; text-shadow: 0 0 20px red">
+          MISSION FAILED
+        </h1>
+        <div class="death-options">
+          <button id="spectate-btn">SPECTATE</button>
+          <button id="menu-btn" onclick="location.reload()">
+            RETURN TO MENU
+          </button>
+        </div>
+      </div>
+
+      <!-- SPECTATE UI -->
+      <div id="spectate-ui" style="display: none">
+        <div class="spectating-text">SPECTATING MODE ACTIVE</div>
+        <button id="spectate-return-btn" onclick="location.reload()">
+          RETURN TO HANGAR
+        </button>
+      </div>
+
+      <!-- START SCREEN -->
+      <div id="start-screen">
+        <div class="title-container">
+          <h1 class="game-title" data-text="GROOT ZONE">GROOT ZONE</h1>
+          <div class="game-subtitle">SYSTEM ONLINE // AWAITING PILOT</div>
+        </div>
+
+        <div id="selection-container">
+          <div id="selection-left">
+            <div class="class-select-title">SELECT CLASS</div>
+            <div id="class-grid">
+              <div
+                class="class-card"
+                onclick="selectClass('SCOUT')"
+                id="card-SCOUT"
+              >
+                SCOUT
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('HEAVY')"
+                id="card-HEAVY"
+              >
+                HEAVY
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('SNIPER')"
+                id="card-SNIPER"
+              >
+                SNIPER
+              </div>
+              <div
+                class="class-card selected"
+                onclick="selectClass('ASSAULT')"
+                id="card-ASSAULT"
+              >
+                ASSAULT
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('ENGINEER')"
+                id="card-ENGINEER"
+              >
+                ENGI
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('PYRO')"
+                id="card-PYRO"
+              >
+                PYRO
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('LANCER')"
+                id="card-LANCER"
+              >
+                LANCER
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('GHOST')"
+                id="card-GHOST"
+              >
+                GHOST
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('TITAN')"
+                id="card-TITAN"
+              >
+                TITAN
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('SUMMONER')"
+                id="card-SUMMONER"
+              >
+                SUMMONER
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('BERSERKER')"
+                id="card-BERSERKER"
+              >
+                BERSERK
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('CHRONOS')"
+                id="card-CHRONOS"
+              >
+                CHRONOS
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('ALCHEMIST')"
+                id="card-ALCHEMIST"
+              >
+                ALCHEMIST
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('WARDEN')"
+                id="card-WARDEN"
+              >
+                WARDEN
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('BARD')"
+                id="card-BARD"
+              >
+                BARD
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('SHADE')"
+                id="card-SHADE"
+              >
+                SHADE
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('JUGGERNAUT')"
+                id="card-JUGGERNAUT"
+              >
+                JUGGERNAUT
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('ARCANIST')"
+                id="card-ARCANIST"
+              >
+                ARCANIST
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('GAMBLER')"
+                id="card-GAMBLER"
+              >
+                GAMBLER
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('TRAPPER')"
+                id="card-TRAPPER"
+              >
+                TRAPPER
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('NINJA')"
+                id="card-NINJA"
+              >
+                NINJA
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('DRUID')"
+                id="card-DRUID"
+              >
+                DRUID
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('VOLT')"
+                id="card-VOLT"
+              >
+                VOLT
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('COMMANDER')"
+                id="card-COMMANDER"
+              >
+                CMDR
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('HUNTRESS')"
+                id="card-HUNTRESS"
+              >
+                HUNTRESS
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('NECROMANCER')"
+                id="card-NECROMANCER"
+              >
+                NECRO
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('BEAMER')"
+                id="card-BEAMER"
+              >
+                BEAMER
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('GUNSLINGER')"
+                id="card-GUNSLINGER"
+              >
+                GUNNER
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('SHAMAN')"
+                id="card-SHAMAN"
+              >
+                SHAMAN
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('PLAGUE')"
+                id="card-PLAGUE"
+              >
+                PLAGUE
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('RONIN')"
+                id="card-RONIN"
+              >
+                RONIN
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('HIVE')"
+                id="card-HIVE"
+              >
+                HIVE
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('GRAVITY')"
+                id="card-GRAVITY"
+              >
+                GRAVITY
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('MARINE')"
+                id="card-MARINE"
+              >
+                MARINE
+              </div>
+              <div
+                class="class-card"
+                onclick="selectClass('PIRATE')"
+                id="card-PIRATE"
+              >
+                PIRATE
+              </div>
+            </div>
+          </div>
+
+          <div id="selection-right">
+            <div id="class-info-panel">
+              <div id="info-name">CLASS NAME</div>
+              <div class="info-section">
+                <span class="info-label">PRIMARY:</span>
+                <span id="info-primary">...</span>
+              </div>
+              <div class="info-section">
+                <span class="info-label">ABILITY:</span>
+                <span id="info-ability">...</span>
+              </div>
+              <div id="info-desc">...</div>
+            </div>
+            <button id="play-btn">INITIATE DEPLOYMENT</button>
+          </div>
+        </div>
+      </div>
+
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
     <script type="module" src="/main.js"></script>
   </body>
 </html>

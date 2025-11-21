@@ -1,6 +1,6 @@
 import { DiscordSDK } from "@discord/embedded-app-sdk";
-
-import rocketLogo from '/rocket.png';
+import { io } from "socket.io-client";
+import { initGame } from "./game-client.js";
 import "./style.css";
 
 // Will eventually store the authenticated user's access_token
@@ -8,11 +8,21 @@ let auth;
 
 const discordSdk = new DiscordSDK(import.meta.env.VITE_DISCORD_CLIENT_ID);
 
-setupDiscordSdk().then(() => {
+setupDiscordSdk().then((user) => {
   console.log("Discord SDK is authenticated");
+  
+  // Clean up the loading screen or placeholder
+  document.querySelector('#app').style.display = 'none';
+  document.getElementById('game-container').style.display = 'block';
 
-  // We can now make API calls within the scopes we requested in setupDiscordSDK()
-  // Note: the access_token returned is a sensitive secret and should be treated as such
+  // Connect to Socket.IO
+  const socket = io({
+    path: '/socket.io', // Ensure this matches the proxy path
+  });
+
+  // Start Game
+  const username = user?.username || 'Pilot';
+  initGame(socket, username);
 });
 
 async function setupDiscordSdk() {
@@ -52,11 +62,6 @@ async function setupDiscordSdk() {
   if (auth == null) {
     throw new Error("Authenticate command failed");
   }
+  
+  return auth.user;
 }
-
-document.querySelector('#app').innerHTML = `
-  <div>
-    <img src="${rocketLogo}" class="logo" alt="Discord" />
-    <h1>Hello, World!</h1>
-  </div>
-`;
